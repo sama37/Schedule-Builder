@@ -623,7 +623,7 @@ function render() {
   // Header
   const header = el("header", "app-header");
   header.appendChild(el("h1", "", "Class Schedule Builder"));
-  header.appendChild(el("p", "", "Optional courses are added only as needed. Uncheck "Include optional courses" to see required-only schedules."));
+  header.appendChild(el("p", "", "Optional courses are added only as needed. Uncheck 'Include optional courses' to see required-only schedules."));
   root.appendChild(header);
 
   // Main grid
@@ -644,7 +644,7 @@ function render() {
   if (state.courses.length === 0) {
     const empty = el("div", "empty-state");
     empty.appendChild(el("p", "", "No courses yet"));
-    empty.appendChild(el("p", "", "Click "Add course" to get started."));
+    empty.appendChild(el("p", "", "Click 'Add course' to get started."));
     left.appendChild(empty);
   } else {
     state.courses.forEach(c => left.appendChild(renderCourseCard(c)));
