@@ -189,9 +189,7 @@ function requiresTravel(a, b) {
     && a.location && b.location && a.location !== b.location;
 }
 function requiredGapMins(a, b) {
-  let base = Number(state.minGap) || 0;
-  if (requiresTravel(a, b)) base += Number(state.travelPenalty) || 0;
-  return base;
+  return Number(state.minGap) || 0;
 }
 function meetingBlocked(m) {
   if (isAsyncMeeting(m)) return false;
@@ -738,8 +736,7 @@ function renderGeneratePanel(container) {
 
   filterTime("Earliest start", "earliestStart");
   filterTime("Latest end",     "latestEnd");
-  filterNum("Min gap (min)",   "minGap");
-  filterNum("Extra travel (min)", "travelPenalty");
+  filterNum("Time between classes (minutes)", "minGap");
 
   const noFriLabel = document.createElement("label");
   noFriLabel.className = "checkbox-label col-span-2";
