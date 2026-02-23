@@ -1,0 +1,376 @@
+/* ============================================================
+   Class Schedule Builder — styles.css
+   All visual styles live here.
+   ============================================================ */
+
+/* ---------- Base / Reset ---------- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: ui-sans-serif, system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: #f8fafc; /* slate-50 */
+  color: #1e293b;            /* slate-800 */
+  min-height: 100vh;
+}
+
+/* ---------- Layout ---------- */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 1rem 1.5rem;
+}
+
+.app-header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.app-header p {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin-top: 0.25rem;
+}
+
+.app-main {
+  padding: 1.5rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 1280px) {
+  .app-main {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  border: 1px solid transparent;
+  font-family: inherit;
+  transition: opacity 0.15s ease;
+}
+
+.btn:hover { opacity: 0.85; }
+
+.btn-dark   { background: #0f172a; color: #fff; }
+.btn-white  { background: #fff; border-color: #e2e8f0; color: #1e293b; }
+.btn-danger { background: #fff4f4; border-color: #fca5a5; color: #b91c1c; }
+.btn-green  { background: #059669; color: #fff; }
+
+/* ---------- Cards ---------- */
+.card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  padding: 1rem;
+}
+
+.card + .card { margin-top: 1rem; }
+
+/* ---------- Form controls ---------- */
+.field-label {
+  display: block;
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-bottom: 0.2rem;
+}
+
+.input, .select {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-family: inherit;
+  background: #fff;
+  color: #1e293b;
+}
+
+.input:focus, .select:focus {
+  outline: 2px solid #059669;
+  outline-offset: 1px;
+}
+
+.input-sm  { width: 5rem; }
+.input-md  { width: 10rem; }
+.input-full{ width: 100%; }
+
+/* ---------- Day picker ---------- */
+.day-picker {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.day-btn {
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  font-size: 0.875rem;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.1s, border-color 0.1s;
+}
+
+.day-btn.active {
+  background: #ecfdf5;
+  border-color: #6ee7b7;
+  color: #065f46;
+}
+
+.day-picker.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* ---------- Meeting row ---------- */
+.meeting-row {
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+/* ---------- Section card ---------- */
+.section-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+/* ---------- Generate panel (sidebar) ---------- */
+.generate-panel {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  padding: 1rem;
+  position: sticky;
+  top: 5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.filters-box {
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.filters-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.filters-grid .col-span-2 { grid-column: span 2; }
+
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ---------- Checkbox ---------- */
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+input[type="checkbox"].cb {
+  width: 1rem;
+  height: 1rem;
+  accent-color: #059669;
+}
+
+/* ---------- Results ---------- */
+.result-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.result-header {
+  padding: 0.5rem 0.75rem;
+  background: #0f172a;
+  color: #fff;
+  font-size: 0.875rem;
+}
+
+.result-body { padding: 0.75rem; }
+
+.result-list {
+  list-style: none;
+  margin-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+}
+
+.result-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.badge-required {
+  background: #ecfdf5;
+  border-color: #6ee7b7;
+  color: #065f46;
+}
+
+.badge-optional {
+  background: #f8fafc;
+  color: #64748b;
+}
+
+.result-meta { color: #64748b; margin-left: auto; }
+
+/* ---------- Mini calendar grid ---------- */
+.mini-grid {
+  display: grid;
+  grid-template-columns: 2.5rem repeat(5, 1fr);
+  gap: 0.5rem;
+}
+
+.mini-grid-header { font-size: 0.75rem; font-weight: 500; text-align: center; }
+
+.mini-time-col {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-size: 0.65rem;
+  color: #94a3b8;
+  padding-right: 0.25rem;
+  text-align: right;
+  height: 16rem;
+}
+
+.mini-day-col {
+  position: relative;
+  height: 16rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  background: #f8fafc;
+  overflow: hidden;
+}
+
+.mini-block {
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  border-radius: 0.4rem;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+  font-size: 11px;
+  padding: 2px 4px;
+  overflow: hidden;
+}
+
+.mini-block-title   { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mini-block-sub     { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mini-block-time    { font-size: 10px; color: #64748b; }
+
+/* ---------- Warning / info banners ---------- */
+.warn-box {
+  font-size: 0.75rem;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  color: #92400e;
+}
+
+.no-results-box {
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  background: #f8fafc;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+/* ---------- Toolbar row ---------- */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+/* ---------- Flex helpers ---------- */
+.flex        { display: flex; }
+.flex-wrap   { flex-wrap: wrap; }
+.items-end   { align-items: flex-end; }
+.items-center{ align-items: center; }
+.gap-2       { gap: 0.5rem; }
+.gap-3       { gap: 0.75rem; }
+.ml-auto     { margin-left: auto; }
+.mt-2        { margin-top: 0.5rem; }
+.mt-3        { margin-top: 0.75rem; }
+.mt-4        { margin-top: 1rem; }
+.font-medium { font-weight: 500; }
+.font-semibold{font-weight: 600; }
+.text-sm     { font-size: 0.875rem; }
+.text-xs     { font-size: 0.75rem; }
+.text-slate  { color: #64748b; }
+
+/* ---------- Courses section heading ---------- */
+.section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+}
+
+.empty-state {
+  border: 2px dashed #e2e8f0;
+  border-radius: 1rem;
+  padding: 2rem;
+  text-align: center;
+  background: #fff;
+}
+
+.empty-state p:first-child { font-weight: 500; }
+.empty-state p:last-child  { font-size: 0.875rem; color: #64748b; margin-top: 0.25rem; }
+
+/* ---------- Global error ---------- */
+#err { font-family: inherit; padding: 0.75rem; color: #b91c1c; }
