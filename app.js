@@ -23,6 +23,37 @@ function minutesToTime(mins) {
   return h + ":" + m;
 }
 
+// 12-hour format for display (e.g. 9:00 AM, 1:30 PM)
+function minutesToTime12(mins) {
+  if (mins == null) return "";
+  const totalH = Math.floor(mins / 60);
+  const m      = String(mins % 60).padStart(2, "0");
+  const ampm   = totalH >= 12 ? "PM" : "AM";
+  const h      = totalH % 12 === 0 ? 12 : totalH % 12;
+  return h + ":" + m + " " + ampm;
+}
+
+// Parse user-typed time like "9:00 AM", "9:00am", "9am", "13:00" -> minutes
+function parseTime12(str) {
+  if (!str) return null;
+  str = str.trim().toUpperCase();
+  // Try 24-hour format first: 13:00
+  let m = str.match(/^(\d{1,2}):(\d{2})$/);
+  if (m) {
+    const h = parseInt(m[1]), min = parseInt(m[2]);
+    if (h >= 0 && h <= 23 && min >= 0 && min <= 59) return h * 60 + min;
+  }
+  // 12-hour with AM/PM: 9:00 AM, 9:00AM, 9AM, 9 AM
+  m = str.match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)$/);
+  if (m) {
+    let h = parseInt(m[1]), min = m[2] ? parseInt(m[2]) : 0;
+    if (m[3] === "AM" && h === 12) h = 0;
+    if (m[3] === "PM" && h !== 12) h += 12;
+    if (h >= 0 && h <= 23 && min >= 0 && min <= 59) return h * 60 + min;
+  }
+  return null;
+}
+
 function rangesOverlap(aS, aE, bS, bE) { return aS < bE && bS < aE; }
 
 function meetsConflict(a, b) {
@@ -343,8 +374,31 @@ function renderMeetingRow(cid, sid, m) {
   row.appendChild(asyncWrap);
 
   row.appendChild(labelWrap("Days", dayPickerEl(m.days || [], days => update({ days }), async)));
-  row.appendChild(labelWrap("Start", inputEl("time", minutesToTime(m.start), "", e => { if (!async) update({ start: timeToMinutes(e.target.value) }); })));
-  row.appendChild(labelWrap("End",   inputEl("time", minutesToTime(m.end),   "", e => { if (!async) update({ end:   timeToMinutes(e.target.value) }); })));
+  const startInp = document.createElement("input");
+  startInp.type = "text"; startInp.className = "input"; startInp.placeholder = "e.g. 9:00 AM";
+  startInp.value = m.start != null ? minutesToTime12(m.start) : "";
+  if (async) startInp.disabled = true;
+  startInp.addEventListener("blur", e => {
+    if (async) return;
+    const parsed = parseTime12(e.target.value);
+    if (parsed !== null) { e.target.value = minutesToTime12(parsed); update({ start: parsed }); }
+    else { e.target.style.borderColor = "#ef4444"; }
+  });
+  startInp.addEventListener("focus", e => { e.target.style.borderColor = ""; });
+  row.appendChild(labelWrap("Start (e.g. 9:00 AM)", startInp));
+
+  const endInp = document.createElement("input");
+  endInp.type = "text"; endInp.className = "input"; endInp.placeholder = "e.g. 10:30 AM";
+  endInp.value = m.end != null ? minutesToTime12(m.end) : "";
+  if (async) endInp.disabled = true;
+  endInp.addEventListener("blur", e => {
+    if (async) return;
+    const parsed = parseTime12(e.target.value);
+    if (parsed !== null) { e.target.value = minutesToTime12(parsed); update({ end: parsed }); }
+    else { e.target.style.borderColor = "#ef4444"; }
+  });
+  endInp.addEventListener("focus", e => { e.target.style.borderColor = ""; });
+  row.appendChild(labelWrap("End (e.g. 10:30 AM)", endInp));
   row.appendChild(labelWrap("Location", inputEl("text", m.location, "input-md", e => update({ location: e.target.value }))));
   row.appendChild(labelWrap("Mode", selectEl(["In-person","Online sync","Online async"], m.mode, e => update({ mode: e.target.value }))));
 
@@ -465,7 +519,7 @@ function renderMiniGrid(blocks) {
   DAY_ORDER.forEach(d => grid.appendChild(el("div", "mini-grid-header", d)));
 
   const timeCol = el("div", "mini-time-col");
-  [8, 10, 12, 14, 16, 18].forEach(h => timeCol.appendChild(el("div", "", h + ":00")));
+  [8, 10, 12, 14, 16, 18].forEach(h => timeCol.appendChild(el("div", "", minutesToTime12(h * 60))));
   grid.appendChild(timeCol);
 
   DAY_ORDER.forEach(d => {
@@ -477,10 +531,10 @@ function renderMiniGrid(blocks) {
       const block  = el("div", "mini-block");
       block.style.top    = top    + "%";
       block.style.height = height + "%";
-      block.title = `${s.course?.code || ""} ${s.course?.name || ""} (${s.sectionLabel}) — ${s.title} @ ${s.location} (${s.mode})`;
+      block.title = `${s.course?.code || ""} ${s.course?.name || ""} (${s.sectionLabel}) — ${s.title} ${minutesToTime12(s.start)}-${minutesToTime12(s.end)} @ ${s.location} (${s.mode})`;
       block.appendChild(el("div", "mini-block-title", `${s.course?.code || ""} ${s.sectionLabel}`));
       block.appendChild(el("div", "mini-block-sub",  `${s.title} · ${s.location}`));
-      block.appendChild(el("div", "mini-block-time", `${minutesToTime(s.start)}-${minutesToTime(s.end)} (${s.mode})`));
+      block.appendChild(el("div", "mini-block-time", `${minutesToTime12(s.start)}-${minutesToTime12(s.end)} (${s.mode})`));
       col.appendChild(block);
     });
     grid.appendChild(col);
@@ -491,7 +545,7 @@ function renderMiniGrid(blocks) {
 // ─── Result card ─────────────────────────────────────────────
 function renderResultCard(result, idx) {
   const card = el("div", "result-card");
-  const gapsH = Math.round(result.gaps / 10) / 6;
+  const gapsH = (result.gaps / 60).toFixed(1);
   card.appendChild(el("div", "result-header", `Option ${idx + 1} • Score ${result.score} • Gaps ${gapsH} h • ${result.creditTotal} credits`));
 
   const body = el("div", "result-body");
@@ -505,7 +559,7 @@ function renderResultCard(result, idx) {
     const name   = el("span", "text-slate",  sel.course.name);
     const summs  = (sel.section.meetings || []).map(m => {
       if (isAsyncMeeting(m)) return (m.title || "Meeting") + " (Async)";
-      return `${m.title} ${(m.days || []).join("/")} ${minutesToTime(m.start)}-${minutesToTime(m.end)} @ ${m.location}`;
+      return `${m.title} ${(m.days || []).join("/")} ${minutesToTime12(m.start)}-${minutesToTime12(m.end)} @ ${m.location}`;
     });
     const meta   = el("span", "result-meta", `${sel.section.label} — ${summs.join("; ")}`);
     li.appendChild(badge); li.appendChild(code); li.appendChild(name); li.appendChild(meta);
