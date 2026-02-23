@@ -167,6 +167,7 @@ let state = {
   travelPenalty:getLS("csb.travelPenalty.v1", 15),
   generated:    [],
   ranOnce:      false,
+  page:         'builder', // 'builder' or 'results'
 };
 
 function saveState() {
@@ -513,6 +514,7 @@ function renderCourseCard(c) {
 // ─── Mini calendar grid ──────────────────────────────────────
 function renderMiniGrid(blocks) {
   const START = 8 * 60, END = 18 * 60, TOTAL = END - START;
+  const COL_PX = 600; // must match .mini-day-col height in CSS
 
   const grid = el("div", "mini-grid");
   grid.appendChild(el("div"));
@@ -524,17 +526,17 @@ function renderMiniGrid(blocks) {
 
   DAY_ORDER.forEach(d => {
     const col = el("div", "mini-day-col");
-    (blocks || []).forEach((s, idx) => {
+    (blocks || []).forEach((s) => {
       if (!(s.days || []).includes(d)) return;
-      const top    = ((s.start - START) / TOTAL) * 100;
-      const height = ((s.end - s.start) / TOTAL) * 100;
-      const block  = el("div", "mini-block");
-      block.style.top    = top    + "%";
-      block.style.height = height + "%";
+      const topPx    = ((s.start - START) / TOTAL) * COL_PX;
+      const heightPx = Math.max(((s.end - s.start) / TOTAL) * COL_PX, 32); // min 32px so short blocks show
+      const block    = el("div", "mini-block");
+      block.style.top    = topPx + "px";
+      block.style.height = heightPx + "px";
       block.title = `${s.course?.code || ""} ${s.course?.name || ""} (${s.sectionLabel}) — ${s.title} ${minutesToTime12(s.start)}-${minutesToTime12(s.end)} @ ${s.location} (${s.mode})`;
       block.appendChild(el("div", "mini-block-title", `${s.course?.code || ""} ${s.sectionLabel}`));
       block.appendChild(el("div", "mini-block-sub",  `${s.title} · ${s.location}`));
-      block.appendChild(el("div", "mini-block-time", `${minutesToTime12(s.start)}-${minutesToTime12(s.end)} (${s.mode})`));
+      block.appendChild(el("div", "mini-block-time", `${minutesToTime12(s.start)}-${minutesToTime12(s.end)}`));
       col.appendChild(block);
     });
     grid.appendChild(col);
@@ -590,12 +592,21 @@ function renderGeneratePanel(container) {
     row.appendChild(inp); grid.appendChild(row);
   }
   function filterTime(label, key) {
-    const row = el("label", "filter-row");
+    const row = el("div", "filter-row");
     row.appendChild(el("span", "", label));
-    const inp = inputEl("time", minutesToTime(state[key]), "", e => {
-      state[key] = timeToMinutes(e.target.value); saveState();
+    const inp = document.createElement("input");
+    inp.type = "text";
+    inp.className = "input input-sm";
+    inp.placeholder = "e.g. 8:00 AM";
+    inp.value = state[key] != null ? minutesToTime12(state[key]) : "";
+    inp.addEventListener("blur", e => {
+      const parsed = parseTime12(e.target.value);
+      if (parsed !== null) { e.target.value = minutesToTime12(parsed); state[key] = parsed; saveState(); }
+      else { e.target.style.borderColor = "#ef4444"; }
     });
-    row.appendChild(inp); grid.appendChild(row);
+    inp.addEventListener("focus", e => { e.target.style.borderColor = ""; });
+    row.appendChild(inp);
+    grid.appendChild(row);
   }
 
   filterNum("Min credits", "minCredits");
@@ -646,31 +657,58 @@ function renderGeneratePanel(container) {
   // Buttons
   const btnRow = el("div", "flex gap-2");
   const genBtn = el("button", "btn btn-green", "Generate");
-  genBtn.onclick = () => { generateSchedules(); render(); };
+  genBtn.onclick = () => { generateSchedules(); if (state.generated.length > 0) { state.page = 'results'; } render(); };
   const clearBtn = el("button", "btn btn-white", "Clear results");
   clearBtn.onclick = () => { state.generated = []; state.ranOnce = false; render(); };
   btnRow.appendChild(genBtn); btnRow.appendChild(clearBtn);
   panel.appendChild(btnRow);
 
-  // Warning
+  // Status message only — full results shown on the results page
   if (state.ranOnce && state.generated.length === 0) {
     panel.appendChild(el("div", "warn-box", "No valid schedules found. Try widening time windows, lowering min credits, or unchecking 'No Friday classes.'"));
-  }
-
-  // Results list
-  if (!state.generated || state.generated.length === 0) {
-    panel.appendChild(el("div", "no-results-box", "No results yet. Click Generate."));
+  } else if (state.generated.length > 0) {
+    const hint = el("div", "no-results-box", "✓ " + state.generated.length + " schedule" + (state.generated.length !== 1 ? "s" : "") + " generated. Click Generate to view them.");
+    hint.style.color = "#065f46";
+    hint.style.background = "#ecfdf5";
+    hint.style.borderColor = "#6ee7b7";
+    panel.appendChild(hint);
   } else {
-    const resultsWrap = el("div");
-    state.generated.forEach((r, idx) => resultsWrap.appendChild(renderResultCard(r, idx)));
-    panel.appendChild(resultsWrap);
+    panel.appendChild(el("div", "no-results-box", "No results yet. Click Generate."));
   }
 
   container.appendChild(panel);
 }
 
+// ─── Results page ────────────────────────────────────────────
+function renderResultsPage() {
+  const root = document.getElementById("root");
+  root.innerHTML = "";
+
+  const header = el("header", "app-header results-header");
+  const backBtn = el("button", "btn btn-white", "← Edit Courses");
+  backBtn.onclick = () => { state.page = "builder"; render(); };
+  const title = el("h1", "", "Generated Schedules");
+  const count = el("span", "results-count", state.generated.length + " option" + (state.generated.length !== 1 ? "s" : ""));
+  header.appendChild(backBtn);
+  header.appendChild(title);
+  header.appendChild(count);
+  root.appendChild(header);
+
+  const main = el("main", "results-main");
+
+  if (state.generated.length === 0) {
+    main.appendChild(el("div", "warn-box", "No valid schedules found. Go back and adjust your filters."));
+  } else {
+    state.generated.forEach((r, idx) => main.appendChild(renderResultCard(r, idx)));
+  }
+
+  root.appendChild(main);
+}
+
 // ─── Full render ─────────────────────────────────────────────
 function render() {
+  if (state.page === "results") { renderResultsPage(); return; }
+
   const root = document.getElementById("root");
   root.innerHTML = "";
 

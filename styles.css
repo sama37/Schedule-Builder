@@ -267,7 +267,7 @@ input[type="checkbox"].cb {
 /* ---------- Mini calendar grid ---------- */
 .mini-grid {
   display: grid;
-  grid-template-columns: 2.5rem repeat(5, 1fr);
+  grid-template-columns: 3rem repeat(5, 1fr);
   gap: 0.5rem;
 }
 
@@ -277,16 +277,17 @@ input[type="checkbox"].cb {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  font-size: 0.65rem;
-  color: #94a3b8;
-  padding-right: 0.25rem;
+  font-size: 0.7rem;
+  color: #64748b;
+  font-weight: 500;
+  padding-right: 0.35rem;
   text-align: right;
-  height: 16rem;
+  height: 600px;
 }
 
 .mini-day-col {
   position: relative;
-  height: 16rem;
+  height: 600px;
   border: 1px solid #e2e8f0;
   border-radius: 0.75rem;
   background: #f8fafc;
@@ -295,21 +296,22 @@ input[type="checkbox"].cb {
 
 .mini-block {
   position: absolute;
-  left: 2px;
-  right: 2px;
+  left: 3px;
+  right: 3px;
   border-radius: 0.4rem;
   border: 1px solid #6366f1;
   background: #eef2ff;
   box-shadow: 0 1px 3px rgba(0,0,0,0.15);
-  font-size: 11px;
-  padding: 2px 4px;
+  font-size: 12px;
+  padding: 4px 6px;
   overflow: hidden;
   z-index: 2;
+  min-height: 2rem;
 }
 
-.mini-block-title   { font-weight: 700; color: #1e1b4b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mini-block-title   { font-weight: 700; color: #1e1b4b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 12px; }
 .mini-block-sub     { color: #312e81; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.mini-block-time    { font-size: 10px; color: #4338ca; font-weight: 500; }
+.mini-block-time    { font-size: 11px; color: #4338ca; font-weight: 500; }
 
 /* ---------- Warning / info banners ---------- */
 .warn-box {
@@ -377,3 +379,42 @@ input[type="checkbox"].cb {
 
 /* ---------- Global error ---------- */
 #err { font-family: inherit; padding: 0.75rem; color: #b91c1c; }
+
+/* â”€â”€â”€ Results page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.results-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.results-header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.results-count {
+  font-size: 0.875rem;
+  color: #64748b;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 9999px;
+  padding: 0.2rem 0.75rem;
+}
+
+.results-main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.result-card {
+  border: 1px solid #c7d2fe;
+  border-radius: 1rem;
+  overflow: visible;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(99,102,241,0.08);
+}
