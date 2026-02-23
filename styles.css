@@ -1,5 +1,5 @@
 /* ============================================================
-   Class Schedule Builder â€” styles.css
+   Class Schedule Builder — styles.css
    All visual styles live here.
    ============================================================ */
 
@@ -65,7 +65,8 @@ body {
 .btn:hover { opacity: 0.85; }
 
 .btn-dark   { background: #1e293b; color: #fff; font-weight: 500; }
-.btn-white  { background: #fff; border-color: #e2e8f0; color: #1e293b; }
+.btn-white  { background: #fff; border-color: #e2e8f0; color: #1e293b; transition: background 0.15s, border-color 0.15s, box-shadow 0.15s; }
+.btn-white:hover { background: #f1f5f9; border-color: #94a3b8; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
 .btn-danger { background: #fff4f4; border-color: #fca5a5; color: #b91c1c; }
 .btn-green  { background: #047857; color: #fff; font-weight: 600; }
 
@@ -380,7 +381,7 @@ input[type="checkbox"].cb {
 /* ---------- Global error ---------- */
 #err { font-family: inherit; padding: 0.75rem; color: #b91c1c; }
 
-/* â”€â”€â”€ Results page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── Results page ─────────────────────────────── */
 .results-header {
   display: flex;
   align-items: center;
@@ -414,7 +415,204 @@ input[type="checkbox"].cb {
 .result-card {
   border: 1px solid #c7d2fe;
   border-radius: 1rem;
-  overflow: visible;
+  overflow: hidden;
   background: #fff;
   box-shadow: 0 2px 8px rgba(99,102,241,0.08);
 }
+
+/* ─── Result card redesign ──────────────────────────────────── */
+.result-header {
+  padding: 0.75rem 1rem;
+  background: #1e1b4b;
+  color: #e0e7ff;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.result-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.result-option-label {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+/* Stat pills row */
+.result-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.result-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 9999px;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.78rem;
+  color: #e0e7ff;
+  cursor: default;
+}
+
+.pill-icon { font-size: 0.75rem; }
+.pill-value { font-weight: 500; }
+
+/* Details toggle button */
+.btn-details {
+  padding: 0.4rem 0.9rem;
+  border-radius: 0.6rem;
+  border: 1px solid #c7d2fe;
+  background: #eef2ff;
+  color: #4338ca;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+.btn-details:hover { background: #e0e7ff; color: #3730a3; }
+
+/* ─── Expandable details panel ─────────────────────────────── */
+.details-panel {
+  border-top: 1px solid #e0e7ff;
+  background: #f8f9ff;
+  padding: 1rem 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  border-radius: 0 0 1rem 1rem;
+}
+
+.details-section { display: flex; flex-direction: column; gap: 0.6rem; padding-top: 0.25rem; }
+.details-section + .details-section { margin-top: 0.5rem; }
+
+.details-section-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #312e81;
+  border-bottom: 1px solid #e0e7ff;
+  padding-bottom: 0.35rem;
+}
+
+/* Wait time grid */
+.wait-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.wait-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #fff;
+  border: 1px solid #c7d2fe;
+  border-radius: 0.6rem;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.82rem;
+}
+
+.wait-day {
+  font-weight: 700;
+  color: #1e1b4b;
+  min-width: 2rem;
+}
+
+.wait-value { color: #4338ca; }
+.wait-none  { color: #059669; font-style: italic; }
+
+/* Course detail cards */
+.course-detail-card {
+  background: #fff;
+  border: 1px solid #c7d2fe;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.course-detail-top {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.course-detail-name {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  flex: 1;
+}
+
+.course-detail-code  { font-weight: 700; color: #1e1b4b; font-size: 0.95rem; }
+.course-detail-title { color: #475569; font-size: 0.875rem; }
+.course-detail-credits {
+  margin-left: auto;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #6366f1;
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+  border-radius: 9999px;
+  padding: 0.15rem 0.55rem;
+}
+
+.course-detail-section {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #6366f1;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Meeting rows inside detail */
+.course-detail-meetings {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-top: 0.25rem;
+}
+
+.meeting-detail-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  font-size: 0.83rem;
+  padding: 0.3rem 0.5rem;
+  background: #f8f9ff;
+  border-radius: 0.4rem;
+}
+
+.meeting-detail-type {
+  font-weight: 600;
+  color: #312e81;
+  min-width: 5rem;
+}
+
+.meeting-detail-info { color: #334155; flex: 1; }
+.meeting-detail-async { color: #64748b; font-style: italic; }
+
+.meeting-mode-badge {
+  font-size: 0.72rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 9999px;
+  border: 1px solid;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.mode-inperson { background: #ecfdf5; border-color: #6ee7b7; color: #065f46; }
+.mode-online   { background: #eff6ff; border-color: #93c5fd; color: #1e40af; }

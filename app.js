@@ -544,31 +544,150 @@ function renderMiniGrid(blocks) {
   return grid;
 }
 
+// ─── Result card helpers ─────────────────────────────────────
+function computeScheduleStats(result) {
+  // Days with classes
+  const daysWithClass = new Set();
+  result.chosen.forEach(b => (b.days || []).forEach(d => daysWithClass.add(d)));
+
+  // Earliest start and latest end across all blocks
+  let earliest = Infinity, latest = -Infinity;
+  result.chosen.forEach(b => {
+    if (b.start < earliest) earliest = b.start;
+    if (b.end   > latest)   latest   = b.end;
+  });
+
+  // Wait time per day (gaps between consecutive classes)
+  const byDay = new Map();
+  result.chosen.forEach(b => (b.days || []).forEach(d => {
+    if (!byDay.has(d)) byDay.set(d, []);
+    byDay.get(d).push(b);
+  }));
+  const waitByDay = {};
+  byDay.forEach((blocks, d) => {
+    blocks.sort((a, b) => a.start - b.start);
+    let wait = 0;
+    for (let i = 1; i < blocks.length; i++)
+      wait += Math.max(0, blocks[i].start - blocks[i-1].end);
+    waitByDay[d] = wait;
+  });
+
+  return { daysWithClass, earliest, latest, waitByDay };
+}
+
 // ─── Result card ─────────────────────────────────────────────
 function renderResultCard(result, idx) {
   const card = el("div", "result-card");
-  const gapsH = (result.gaps / 60).toFixed(1);
-  card.appendChild(el("div", "result-header", `Option ${idx + 1} • Score ${result.score} • Gaps ${gapsH} h • ${result.creditTotal} credits`));
+  let expanded = false;
 
+  const stats = computeScheduleStats(result);
+
+  // ── Header bar ──
+  const header = el("div", "result-header");
+  const headerLeft = el("div", "result-header-left");
+  headerLeft.appendChild(el("span", "result-option-label", `Option ${idx + 1}`));
+
+  // Stat pills
+  const pills = el("div", "result-pills");
+  function pill(icon, value, title) {
+    const p = el("div", "result-pill");
+    p.title = title;
+    p.appendChild(el("span", "pill-icon", icon));
+    p.appendChild(el("span", "pill-value", value));
+    return p;
+  }
+  pills.appendChild(pill("📚", `${result.creditTotal} credits`, "Total credits"));
+  pills.appendChild(pill("📅", `${stats.daysWithClass.size} day${stats.daysWithClass.size !== 1 ? "s" : ""}/week`, "Days on campus per week"));
+  pills.appendChild(pill("⏰", stats.earliest !== Infinity ? minutesToTime12(stats.earliest) : "—", "Earliest class start"));
+  pills.appendChild(pill("🏁", stats.latest !== -Infinity ? minutesToTime12(stats.latest) : "—", "Latest class end"));
+
+  headerLeft.appendChild(pills);
+  header.appendChild(headerLeft);
+
+  const detailsBtn = el("button", "btn btn-details", "View Details ▾");
+  detailsBtn.onclick = () => {
+    expanded = !expanded;
+    detailsBtn.textContent = expanded ? "Hide Details ▴" : "View Details ▾";
+    detailsPanel.style.display = expanded ? "block" : "none";
+  };
+  header.appendChild(detailsBtn);
+  card.appendChild(header);
+
+  // ── Preview body (always visible) ──
   const body = el("div", "result-body");
   body.appendChild(renderMiniGrid(result.chosen));
-
-  const list = el("ul", "result-list");
-  (result.selectedSections || []).forEach(sel => {
-    const li     = el("li");
-    const badge  = el("span", "badge " + (sel.course.required ? "badge-required" : "badge-optional"), sel.course.required ? "Required" : "Optional");
-    const code   = el("span", "font-medium", sel.course.code);
-    const name   = el("span", "text-slate",  sel.course.name);
-    const summs  = (sel.section.meetings || []).map(m => {
-      if (isAsyncMeeting(m)) return (m.title || "Meeting") + " (Async)";
-      return `${m.title} ${(m.days || []).join("/")} ${minutesToTime12(m.start)}-${minutesToTime12(m.end)} @ ${m.location}`;
-    });
-    const meta   = el("span", "result-meta", `${sel.section.label} — ${summs.join("; ")}`);
-    li.appendChild(badge); li.appendChild(code); li.appendChild(name); li.appendChild(meta);
-    list.appendChild(li);
-  });
-  body.appendChild(list);
   card.appendChild(body);
+
+  // ── Expandable details panel ──
+  const detailsPanel = el("div", "details-panel");
+  detailsPanel.style.display = "none";
+
+  // Wait time per day section
+  const waitSection = el("div", "details-section");
+  waitSection.appendChild(el("h4", "details-section-title", "⏱ Time Between Classes"));
+  const waitGrid = el("div", "wait-grid");
+  DAY_ORDER.forEach(d => {
+    if (!stats.daysWithClass.has(d)) return;
+    const mins = stats.waitByDay[d] || 0;
+    const item = el("div", "wait-item");
+    item.appendChild(el("span", "wait-day", d));
+    if (mins === 0) {
+      item.appendChild(el("span", "wait-value wait-none", "No gaps"));
+    } else {
+      const h = Math.floor(mins / 60), m = mins % 60;
+      const label = h > 0 ? `${h}h ${m > 0 ? m + "m" : ""}` : `${m}m`;
+      item.appendChild(el("span", "wait-value", label + " waiting"));
+    }
+    waitGrid.appendChild(item);
+  });
+  waitSection.appendChild(waitGrid);
+  detailsPanel.appendChild(waitSection);
+
+  // Course breakdown
+  const courseSection = el("div", "details-section");
+  courseSection.appendChild(el("h4", "details-section-title", "📋 Course Breakdown"));
+
+  (result.selectedSections || []).forEach(sel => {
+    const courseCard = el("div", "course-detail-card");
+
+    const courseTop = el("div", "course-detail-top");
+    const badge = el("span", "badge " + (sel.course.required ? "badge-required" : "badge-optional"),
+      sel.course.required ? "Required" : "Optional");
+    const nameWrap = el("div", "course-detail-name");
+    nameWrap.appendChild(el("span", "course-detail-code", sel.course.code));
+    nameWrap.appendChild(el("span", "course-detail-title", sel.course.name));
+    const credSpan = el("span", "course-detail-credits", sel.course.credits + " credits");
+    courseTop.appendChild(badge);
+    courseTop.appendChild(nameWrap);
+    courseTop.appendChild(credSpan);
+    courseCard.appendChild(courseTop);
+
+    const secLabel = el("div", "course-detail-section", `Section ${sel.section.label}`);
+    courseCard.appendChild(secLabel);
+
+    const meetList = el("div", "course-detail-meetings");
+    (sel.section.meetings || []).forEach(m => {
+      const row = el("div", "meeting-detail-row");
+      if (isAsyncMeeting(m)) {
+        row.appendChild(el("span", "meeting-detail-type", m.title || "Meeting"));
+        row.appendChild(el("span", "meeting-detail-async", "Online — Async (no set time)"));
+      } else {
+        row.appendChild(el("span", "meeting-detail-type", m.title || "Meeting"));
+        const info = el("span", "meeting-detail-info");
+        info.textContent = `${(m.days || []).join(", ")}  •  ${minutesToTime12(m.start)} – ${minutesToTime12(m.end)}  •  ${m.location}`;
+        row.appendChild(info);
+        const modeBadge = el("span", "meeting-mode-badge " + (m.mode === "In-person" ? "mode-inperson" : "mode-online"), m.mode);
+        row.appendChild(modeBadge);
+      }
+      meetList.appendChild(row);
+    });
+    courseCard.appendChild(meetList);
+    courseSection.appendChild(courseCard);
+  });
+
+  detailsPanel.appendChild(courseSection);
+  card.appendChild(detailsPanel);
+
   return card;
 }
 
