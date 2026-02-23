@@ -831,7 +831,7 @@ function render() {
   // Header
   const header = el("header", "app-header");
   header.appendChild(el("h1", "", "Class Schedule Builder"));
-  header.appendChild(el("p", "", "Optional courses are added only as needed. Uncheck 'Include optional courses' to see required-only schedules."));
+  header.appendChild(el("p", "", "Woohoo, Let's figure out your course schedule!"));
   root.appendChild(header);
 
   // Main grid
