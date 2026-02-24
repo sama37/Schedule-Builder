@@ -485,20 +485,22 @@ function renderCourseCard(c) {
   priInp.min = 1; priInp.max = 5;
   topRow.appendChild(labelWrap("Priority (1–5)", priInp));
 
-  const removeBtn = el("button", "btn btn-danger ml-auto", "Remove course");
-  removeBtn.onclick = () => { state.courses = state.courses.filter(x => x.id !== c.id); saveState(); render(); };
-  topRow.appendChild(removeBtn);
   card.appendChild(topRow);
 
   // Sections
   const secHead = el("div", "section-title mt-4");
-  secHead.appendChild(el("h3", "font-semibold", "Sections (pick one)"));
+  secHead.appendChild(el("h3", "font-semibold", "Sections"));
+  const secBtns = el("div", "flex gap-2");
   const addSecBtn = el("button", "btn btn-dark", "Add section");
   addSecBtn.onclick = () => {
     c.sections.push(makeSection(String(c.sections.length + 1).padStart(3, "0")));
     saveState(); render();
   };
-  secHead.appendChild(addSecBtn);
+  const removeBtn = el("button", "btn btn-danger", "Remove course");
+  removeBtn.onclick = () => { state.courses = state.courses.filter(x => x.id !== c.id); saveState(); render(); };
+  secBtns.appendChild(addSecBtn);
+  secBtns.appendChild(removeBtn);
+  secHead.appendChild(secBtns);
   card.appendChild(secHead);
 
   if (c.sections.length === 0) {
@@ -834,35 +836,51 @@ function render() {
   header.appendChild(el("p", "", "Woohoo, Let's figure out your course schedule!"));
   root.appendChild(header);
 
-  // Main grid
-  const main = el("main", "app-main");
+  // Single column layout: generate panel on top, courses below
+  const main = el("main", "app-main-single");
 
-  // Left: courses
-  const left = el("section");
+  // TOP: generate panel
+  const topPanel = el("section");
+  renderGeneratePanel(topPanel);
+  main.appendChild(topPanel);
+
+  // BELOW: courses
+  const coursesSection = el("section");
+
   const toolbar = el("div", "toolbar");
   const addBtn = el("button", "btn btn-dark", "Add course");
-  addBtn.onclick = () => { state.courses.push(makeCourse({})); saveState(); render(); };
+  addBtn.onclick = () => { state.courses.unshift(makeCourse({})); saveState(); render(); };
   const clearBtn = el("button", "btn btn-white", "Clear all");
   clearBtn.onclick = () => {
     if (confirm("Clear all courses?")) { state.courses = []; state.generated = []; saveState(); render(); }
   };
   toolbar.appendChild(addBtn); toolbar.appendChild(clearBtn);
-  left.appendChild(toolbar);
+  coursesSection.appendChild(toolbar);
 
   if (state.courses.length === 0) {
     const empty = el("div", "empty-state");
     empty.appendChild(el("p", "", "No courses yet"));
     empty.appendChild(el("p", "", "Click 'Add course' to get started."));
-    left.appendChild(empty);
+    coursesSection.appendChild(empty);
   } else {
-    state.courses.forEach(c => left.appendChild(renderCourseCard(c)));
+    state.courses.forEach(c => coursesSection.appendChild(renderCourseCard(c)));
   }
-  main.appendChild(left);
 
-  // Right: generate panel
-  const right = el("section");
-  renderGeneratePanel(right);
-  main.appendChild(right);
+  // Bottom: repeat generate button
+  if (state.courses.length > 0) {
+    const bottomBar = el("div", "bottom-generate-bar");
+    const bottomGenBtn = el("button", "btn btn-green", "Generate Schedules →");
+    bottomGenBtn.onclick = () => { generateSchedules(); if (state.generated.length > 0) { state.page = "results"; } render(); };
+    bottomBar.appendChild(bottomGenBtn);
+    if (state.ranOnce && state.generated.length === 0) {
+      bottomBar.appendChild(el("span", "bottom-gen-warn", "No valid schedules found — try adjusting filters."));
+    } else if (state.generated.length > 0) {
+      bottomBar.appendChild(el("span", "bottom-gen-hint", "✓ " + state.generated.length + " schedule" + (state.generated.length !== 1 ? "s" : "") + " ready"));
+    }
+    coursesSection.appendChild(bottomBar);
+  }
+
+  main.appendChild(coursesSection);
 
   root.appendChild(main);
 }
